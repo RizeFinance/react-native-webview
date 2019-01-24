@@ -9,7 +9,7 @@
  */
 
 import escapeStringRegexp from 'escape-string-regexp';
-import { Linking } from 'react-native';
+// import { Linking } from 'react-native';
 import type {
   WebViewNavigationEvent,
   WebViewNavigation,
@@ -50,7 +50,7 @@ const createOnShouldStartLoadWithRequest = (
     const { url, lockIdentifier } = nativeEvent;
 
     if (!passesWhitelist(compileWhitelist(originWhitelist), url)) {
-      Linking.openURL(url);
+      // Linking.openURL(url);
       shouldStart = false
     }
 

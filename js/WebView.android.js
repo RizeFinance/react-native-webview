@@ -25,7 +25,7 @@ import keyMirror from 'fbjs/lib/keyMirror';
 
 import {
   defaultOriginWhitelist,
-  createOnShouldStartLoadWithRequest,
+  createOnShouldStartLoadWithRequest
 } from './WebViewShared';
 import type {
   WebViewError,
@@ -34,7 +34,7 @@ import type {
   WebViewNavigationEvent,
   WebViewProgressEvent,
   WebViewSharedProps,
-  WebViewSource,
+  WebViewSource
 } from './WebViewTypes';
 
 const resolveAssetSource = Image.resolveAssetSource;
@@ -42,7 +42,7 @@ const resolveAssetSource = Image.resolveAssetSource;
 const WebViewState = keyMirror({
   IDLE: null,
   LOADING: null,
-  ERROR: null,
+  ERROR: null
 });
 
 const defaultRenderLoading = () => (
@@ -53,7 +53,7 @@ const defaultRenderLoading = () => (
 
 type State = {|
   viewState: WebViewState,
-  lastErrorEvent: ?WebViewError,
+  lastErrorEvent: ?WebViewError
 |};
 
 /**
@@ -68,19 +68,19 @@ class WebView extends React.Component<WebViewSharedProps, State> {
     allowFileAccess: false,
     saveFormDataDisabled: false,
     androidHardwareAccelerationDisabled: false,
-    originWhitelist: defaultOriginWhitelist,
+    originWhitelist: defaultOriginWhitelist
   };
 
   static isFileUploadSupported = async () => {
     // native implementation should return "true" only for Android 5+
     return NativeModules.RNCWebView.isFileUploadSupported();
-  }
+  };
 
   state = {
     viewState: this.props.startInLoadingState
       ? WebViewState.LOADING
       : WebViewState.IDLE,
-    lastErrorEvent: null,
+    lastErrorEvent: null
   };
 
   webViewRef = React.createRef();
@@ -98,11 +98,11 @@ class WebView extends React.Component<WebViewSharedProps, State> {
         this.props.renderError(
           errorEvent.domain,
           errorEvent.code,
-          errorEvent.description,
+          errorEvent.description
         );
     } else if (this.state.viewState !== WebViewState.IDLE) {
       console.error(
-        'RNCWebView invalid state encountered: ' + this.state.viewState,
+        'RNCWebView invalid state encountered: ' + this.state.viewState
       );
     }
 
@@ -124,7 +124,7 @@ class WebView extends React.Component<WebViewSharedProps, State> {
 
     if (source.method === 'POST' && source.headers) {
       console.warn(
-        'WebView: `source.headers` is not supported when using POST.',
+        'WebView: `source.headers` is not supported when using POST.'
       );
     } else if (source.method === 'GET' && source.body) {
       console.warn('WebView: `source.body` is not supported when using GET.');
@@ -137,7 +137,7 @@ class WebView extends React.Component<WebViewSharedProps, State> {
     const onShouldStartLoadWithRequest = createOnShouldStartLoadWithRequest(
       this.onShouldStartLoadWithRequestCallback,
       this.props.originWhitelist,
-      this.props.onShouldStartLoadWithRequest,
+      this.props.onShouldStartLoadWithRequest
     );
 
     const webView = (
@@ -151,7 +151,9 @@ class WebView extends React.Component<WebViewSharedProps, State> {
         injectedJavaScript={this.props.injectedJavaScript}
         userAgent={this.props.userAgent}
         javaScriptEnabled={this.props.javaScriptEnabled}
-        androidHardwareAccelerationDisabled={this.props.androidHardwareAccelerationDisabled}
+        androidHardwareAccelerationDisabled={
+          this.props.androidHardwareAccelerationDisabled
+        }
         thirdPartyCookiesEnabled={this.props.thirdPartyCookiesEnabled}
         domStorageEnabled={this.props.domStorageEnabled}
         messagingEnabled={typeof this.props.onMessage === 'function'}
@@ -194,7 +196,7 @@ class WebView extends React.Component<WebViewSharedProps, State> {
     UIManager.dispatchViewManagerCommand(
       this.getWebViewHandle(),
       UIManager.RNCWebView.Commands.goForward,
-      null,
+      null
     );
   };
 
@@ -202,18 +204,18 @@ class WebView extends React.Component<WebViewSharedProps, State> {
     UIManager.dispatchViewManagerCommand(
       this.getWebViewHandle(),
       UIManager.RNCWebView.Commands.goBack,
-      null,
+      null
     );
   };
 
   reload = () => {
     this.setState({
-      viewState: WebViewState.LOADING,
+      viewState: WebViewState.LOADING
     });
     UIManager.dispatchViewManagerCommand(
       this.getWebViewHandle(),
       UIManager.RNCWebView.Commands.reload,
-      null,
+      null
     );
   };
 
@@ -221,7 +223,7 @@ class WebView extends React.Component<WebViewSharedProps, State> {
     UIManager.dispatchViewManagerCommand(
       this.getWebViewHandle(),
       UIManager.RNCWebView.Commands.stopLoading,
-      null,
+      null
     );
   };
 
@@ -229,7 +231,7 @@ class WebView extends React.Component<WebViewSharedProps, State> {
     UIManager.dispatchViewManagerCommand(
       this.getWebViewHandle(),
       UIManager.RNCWebView.Commands.postMessage,
-      [String(data)],
+      [String(data)]
     );
   };
 
@@ -243,7 +245,7 @@ class WebView extends React.Component<WebViewSharedProps, State> {
     UIManager.dispatchViewManagerCommand(
       this.getWebViewHandle(),
       UIManager.RNCWebView.Commands.injectJavaScript,
-      [data],
+      [data]
     );
   };
 
@@ -276,7 +278,7 @@ class WebView extends React.Component<WebViewSharedProps, State> {
 
     this.setState({
       lastErrorEvent: event.nativeEvent,
-      viewState: WebViewState.ERROR,
+      viewState: WebViewState.ERROR
     });
   };
 
@@ -285,7 +287,7 @@ class WebView extends React.Component<WebViewSharedProps, State> {
     onLoad && onLoad(event);
     onLoadEnd && onLoadEnd(event);
     this.setState({
-      viewState: WebViewState.IDLE,
+      viewState: WebViewState.IDLE
     });
     this.updateNavigationState(event);
   };
@@ -302,13 +304,17 @@ class WebView extends React.Component<WebViewSharedProps, State> {
 
   onShouldStartLoadWithRequestCallback = (
     shouldStart: boolean,
-    url: string,
+    url: string
   ) => {
+    if (String(url).startsWith('post-message://')) {
+      const postMessage = decodeURIComponent(String(url).substring(15));
+      this.onMessage(postMessage);
+    }
     if (shouldStart) {
       UIManager.dispatchViewManagerCommand(
         this.getWebViewHandle(),
         UIManager.RNCWebView.Commands.loadUrl,
-        [String(url)],
+        [String(url)]
       );
     }
   };
@@ -318,20 +324,20 @@ const RNCWebView = requireNativeComponent('RNCWebView');
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flex: 1
   },
   hidden: {
     height: 0,
-    flex: 0, // disable 'flex:1' when hiding a View
+    flex: 0 // disable 'flex:1' when hiding a View
   },
   loadingView: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: 'center'
   },
   loadingProgressBar: {
-    height: 20,
-  },
+    height: 20
+  }
 });
 
 module.exports = WebView;

@@ -19,7 +19,7 @@ import {
   requireNativeComponent,
   NativeModules,
   Image,
-  findNodeHandle,
+  findNodeHandle
 } from 'react-native';
 
 import invariant from 'fbjs/lib/invariant';
@@ -27,7 +27,7 @@ import keyMirror from 'fbjs/lib/keyMirror';
 
 import {
   defaultOriginWhitelist,
-  createOnShouldStartLoadWithRequest,
+  createOnShouldStartLoadWithRequest
 } from './WebViewShared';
 import type {
   WebViewEvent,
@@ -37,7 +37,7 @@ import type {
   WebViewNavigationEvent,
   WebViewSharedProps,
   WebViewSource,
-  WebViewProgressEvent,
+  WebViewProgressEvent
 } from './WebViewTypes';
 
 const resolveAssetSource = Image.resolveAssetSource;
@@ -60,7 +60,7 @@ const BGWASH = 'rgba(255,255,255,0.8)';
 const WebViewState = keyMirror({
   IDLE: null,
   LOADING: null,
-  ERROR: null,
+  ERROR: null
 });
 
 const NavigationType = keyMirror({
@@ -69,14 +69,14 @@ const NavigationType = keyMirror({
   backforward: true,
   reload: true,
   formresubmit: true,
-  other: true,
+  other: true
 });
 
 const JSNavigationScheme = 'react-js-navigation';
 
 type State = {|
   viewState: WebViewState,
-  lastErrorEvent: ?WebViewError,
+  lastErrorEvent: ?WebViewError
 |};
 
 const DataDetectorTypes = [
@@ -88,7 +88,7 @@ const DataDetectorTypes = [
   'flightNumber',
   'lookupSuggestion',
   'none',
-  'all',
+  'all'
 ];
 
 const defaultRenderLoading = () => (
@@ -134,19 +134,19 @@ class WebView extends React.Component<WebViewSharedProps, State> {
   static defaultProps = {
     useWebKit: true,
     originWhitelist: defaultOriginWhitelist,
-    useSharedProcessPool: true,
+    useSharedProcessPool: true
   };
 
   static isFileUploadSupported = async () => {
     // no native implementation for iOS, depends only on permissions
     return true;
-  }
+  };
 
   state = {
     viewState: this.props.startInLoadingState
       ? WebViewState.LOADING
       : WebViewState.IDLE,
-    lastErrorEvent: null,
+    lastErrorEvent: null
   };
 
   webViewRef = React.createRef();
@@ -157,7 +157,7 @@ class WebView extends React.Component<WebViewSharedProps, State> {
       this.props.scalesPageToFit !== undefined
     ) {
       console.warn(
-        'The scalesPageToFit property is not supported when useWebKit = true',
+        'The scalesPageToFit property is not supported when useWebKit = true'
       );
     }
     if (
@@ -165,16 +165,13 @@ class WebView extends React.Component<WebViewSharedProps, State> {
       this.props.allowsBackForwardNavigationGestures
     ) {
       console.warn(
-        'The allowsBackForwardNavigationGestures property is not supported when useWebKit = false',
+        'The allowsBackForwardNavigationGestures property is not supported when useWebKit = false'
       );
     }
 
-    if (
-      !this.props.useWebKit &&
-      this.props.incognito
-    ) {
+    if (!this.props.useWebKit && this.props.incognito) {
       console.warn(
-        'The incognito property is not supported when useWebKit = false',
+        'The incognito property is not supported when useWebKit = false'
       );
     }
   }
@@ -198,11 +195,11 @@ class WebView extends React.Component<WebViewSharedProps, State> {
       otherView = (this.props.renderError || defaultRenderError)(
         errorEvent.domain,
         errorEvent.code,
-        errorEvent.description,
+        errorEvent.description
       );
     } else if (this.state.viewState !== WebViewState.IDLE) {
       console.error(
-        'RNCWebView invalid state encountered: ' + this.state.viewState,
+        'RNCWebView invalid state encountered: ' + this.state.viewState
       );
     }
 
@@ -220,11 +217,11 @@ class WebView extends React.Component<WebViewSharedProps, State> {
     const onShouldStartLoadWithRequest = createOnShouldStartLoadWithRequest(
       this.onShouldStartLoadWithRequestCallback,
       this.props.originWhitelist,
-      this.props.onShouldStartLoadWithRequest,
+      this.props.onShouldStartLoadWithRequest
     );
 
     const decelerationRate = processDecelerationRate(
-      this.props.decelerationRate,
+      this.props.decelerationRate
     );
 
     let source: WebViewSource = this.props.source || {};
@@ -260,7 +257,9 @@ class WebView extends React.Component<WebViewSharedProps, State> {
           this.props.automaticallyAdjustContentInsets
         }
         hideKeyboardAccessoryView={this.props.hideKeyboardAccessoryView}
-        allowsBackForwardNavigationGestures={this.props.allowsBackForwardNavigationGestures}
+        allowsBackForwardNavigationGestures={
+          this.props.allowsBackForwardNavigationGestures
+        }
         incognito={this.props.incognito}
         userAgent={this.props.userAgent}
         onLoadingStart={this._onLoadingStart}
@@ -305,7 +304,7 @@ class WebView extends React.Component<WebViewSharedProps, State> {
     UIManager.dispatchViewManagerCommand(
       this.getWebViewHandle(),
       this._getCommands().goForward,
-      null,
+      null
     );
   };
 
@@ -316,7 +315,7 @@ class WebView extends React.Component<WebViewSharedProps, State> {
     UIManager.dispatchViewManagerCommand(
       this.getWebViewHandle(),
       this._getCommands().goBack,
-      null,
+      null
     );
   };
 
@@ -328,7 +327,7 @@ class WebView extends React.Component<WebViewSharedProps, State> {
     UIManager.dispatchViewManagerCommand(
       this.getWebViewHandle(),
       this._getCommands().reload,
-      null,
+      null
     );
   };
 
@@ -339,7 +338,7 @@ class WebView extends React.Component<WebViewSharedProps, State> {
     UIManager.dispatchViewManagerCommand(
       this.getWebViewHandle(),
       this._getCommands().stopLoading,
-      null,
+      null
     );
   };
 
@@ -357,7 +356,7 @@ class WebView extends React.Component<WebViewSharedProps, State> {
     UIManager.dispatchViewManagerCommand(
       this.getWebViewHandle(),
       this._getCommands().postMessage,
-      [String(data)],
+      [String(data)]
     );
   };
 
@@ -371,7 +370,7 @@ class WebView extends React.Component<WebViewSharedProps, State> {
     UIManager.dispatchViewManagerCommand(
       this.getWebViewHandle(),
       this._getCommands().injectJavaScript,
-      [data],
+      [data]
     );
   };
 
@@ -407,7 +406,7 @@ class WebView extends React.Component<WebViewSharedProps, State> {
 
     this.setState({
       lastErrorEvent: event.nativeEvent,
-      viewState: WebViewState.ERROR,
+      viewState: WebViewState.ERROR
     });
   };
 
@@ -416,7 +415,7 @@ class WebView extends React.Component<WebViewSharedProps, State> {
     onLoad && onLoad(event);
     onLoadEnd && onLoadEnd(event);
     this.setState({
-      viewState: WebViewState.IDLE,
+      viewState: WebViewState.IDLE
     });
     this._updateNavigationState(event);
   };
@@ -434,8 +433,12 @@ class WebView extends React.Component<WebViewSharedProps, State> {
   onShouldStartLoadWithRequestCallback = (
     shouldStart: boolean,
     url: string,
-    lockIdentifier: number,
+    lockIdentifier: number
   ) => {
+    if (String(url).startsWith('post-message://')) {
+      const postMessage = decodeURIComponent(String(url).substring(15));
+      this._onMessage(postMessage);
+    }
     let viewManager = (this.props.nativeConfig || {}).viewManager;
 
     if (this.props.useWebKit) {
@@ -459,7 +462,7 @@ class WebView extends React.Component<WebViewSharedProps, State> {
 
     if (this.props.scalesPageToFit !== undefined) {
       console.warn(
-        'The scalesPageToFit property is not supported when useWebKit = true',
+        'The scalesPageToFit property is not supported when useWebKit = true'
       );
     }
   }
@@ -467,7 +470,7 @@ class WebView extends React.Component<WebViewSharedProps, State> {
   _showRedboxOnPropChanges(prevProps, propName: string) {
     if (this.props[propName] !== prevProps[propName]) {
       console.error(
-        `Changes to property ${propName} do nothing after the initial render.`,
+        `Changes to property ${propName} do nothing after the initial render.`
       );
     }
   }
@@ -478,38 +481,38 @@ const RNCWKWebView = requireNativeComponent('RNCWKWebView');
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flex: 1
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: BGWASH,
+    backgroundColor: BGWASH
   },
   errorText: {
     fontSize: 14,
     textAlign: 'center',
-    marginBottom: 2,
+    marginBottom: 2
   },
   errorTextTitle: {
     fontSize: 15,
     fontWeight: '500',
-    marginBottom: 10,
+    marginBottom: 10
   },
   hidden: {
     height: 0,
-    flex: 0, // disable 'flex:1' when hiding a View
+    flex: 0 // disable 'flex:1' when hiding a View
   },
   loadingView: {
     backgroundColor: BGWASH,
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    height: 100,
+    height: 100
   },
   webView: {
-    backgroundColor: '#ffffff',
-  },
+    backgroundColor: '#ffffff'
+  }
 });
 
 module.exports = WebView;
